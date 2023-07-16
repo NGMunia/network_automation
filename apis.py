@@ -53,30 +53,37 @@ def ntp_config(post: NTPClass):
     result = conn.send_config_set(commands)
     conn.save_config()
     return result
-
+    
 
 '''
     SNMP POST:
       - Configures SNMP on all devices
 '''
 class SNMPClass(BaseModel):
+    Device_IP : str
     snmp_server_host : str
     snmp_password : str
 @app.post('/Devices/Configure/SNMP', status_code = status.HTTP_201_CREATED)
 def snmpconf(post: SNMPClass):
-    for devices in R1_LAN, R1_EDGE, R2_EDGE, R2_VPN, R1_VPN:
-        conn = ConnectHandler(**devices)
-        conn.enabl
-        configs = ['ip access-list standard SNMP',
-                   'permit host '+post.snmp_server_host,
-                   'snmp-server community '+post.snmp_password+' ro SNMP',
-                   'snmp-server system-shutdown',
-                   'snmp-server enable traps config',
-                   'snmp-server host '+post.snmp_server_host+' traps version 2c '
-                   +post.snmp_password]
-        result = conn.send_config_set(configs)
-        conn.save_config()
-        return('\n', result)
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : post.Device_IP }
+
+    conn = ConnectHandler(**device)
+    conn.enable()
+    configs = ['ip access-list standard SNMP',
+                'permit host '+post.snmp_server_host,
+                'snmp-server community '+post.snmp_password+' ro SNMP',
+                'snmp-server system-shutdown',
+                'snmp-server enable traps config',
+                'snmp-server host '+post.snmp_server_host+' traps version 2c '
+                +post.snmp_password]
+    result = conn.send_config_set(configs)
+    conn.save_config()
+    return result.splitlines(), f'SNMP on Host_{post.Device_IP} configured successfully'
      
     
 '''
@@ -103,19 +110,18 @@ def netflowconf(post: Netflow_Class):
     conn.enable()
 
     commands = ['ip flow-export version 9',
-                'ip flow-export destination '+post.dest_ip+ str(post.udp_port),
+                'ip flow-export destination '+post.dest_ip+' '+str(post.udp_port),
                 'int '+post.flow_intf,
                 'ip nbar protocol-discovery',
-                'ip flow ingess',
+                'ip flow ingress',
                 'ip flow egress',
                 'ip flow-top-talkers',
-                'tpp 5',
+                'top 5',
                 'sort-by bytes',
                 'ip flow-cache timeout active 1']
     result= conn.send_config_set(commands)
     conn.save_config()
-    return result
-
+    return result.splitlines(), f'NetFlow on Host_{post.Device_IP} configured successfully'
 
 '''
     SYSLOG POST:
@@ -123,19 +129,25 @@ def netflowconf(post: Netflow_Class):
 '''
 class Syslog_class(BaseModel):
     server_ip : str
+    Device_IP : str
 @app.post('/Devices/Configure/Syslog', status_code = status.HTTP_201_CREATED)
 def syslog_conf(post: Syslog_class):
-    for devices in R1_LAN, R1_EDGE, R2_EDGE, R1_VPN, R2_VPN:
-        conn = ConnectHandler(**devices)
-        conn.enable()
-
-        commands = ['logging monitor informational',
-                    'logging host '+post.server_ip,
-                    'logging trap']
-        result = conn.send_config_set(commands)
-        conn.save_config()
-        return('\n', result)
-    
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : post.Device_IP
+               }
+    conn = ConnectHandler(**device)
+    conn.enable()
+    commands = ['logging monitor informational',
+                'logging host '+post.server_ip,
+                'logging trap']
+    result = conn.send_config_set(commands)
+    conn.save_config()
+    return result.splitlines(), f'Syslog on Host_{post.Device_IP} configured successfully'
+        
 
 '''
     HSRP POST:
@@ -168,7 +180,7 @@ def HSRP_Config(post: HSRP_class):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return('\n', result)
+    return result.splitlines(), f'HSRP on Host_{post.Device_IP} configured successfully'
 
 
 '''
@@ -204,7 +216,7 @@ def DHCP_Conf(post: DHCP_class):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result
+    return result.splitlines(), f'DHCP on Host_{post.Device_IP} configured successfully'
 
 
 '''
@@ -277,11 +289,12 @@ def QoS_config(post: QoS_profile_bandwidth):
                      'service-policy output '+post.Policy_name ]
         result = conn.send_config_set(commands)
         conn.save_config()       
-        return result
+        return result.splitlines(), f'QoS on Host_{post.Device_IP} configured successfully'
 
-      
+
+
 '''
-  API POST COnfiguring Ethernet and Loopback Interfaces
+  API POST Configuring Ethernet and Loopback Interfaces
 '''
 class interface_conf_class(BaseModel):
     Host_IP : str
@@ -297,7 +310,7 @@ def Intf_conf(post :interface_conf_class):
                 'secret': 'cisco123',
                 'ip' : post.host_IP
                }
-    conn = ConnectHandler()
+    conn = ConnectHandler(**device)
     conn.enable()
 
     commands = [
@@ -306,7 +319,8 @@ def Intf_conf(post :interface_conf_class):
                 'no shut'
                ]
     result = conn.send_config_set(commands)
-    return result
+    return result.splitlines(), f'Interface {post.interface_type} on Host_{post.Device_IP} configured successfully'
+
 
 
 '''
@@ -340,49 +354,6 @@ def Intf_conf(post :tunnel_conf_class):
                 'no shut'
                ]
     result = conn.send_config_set(commands)
-    return result
+    return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{post.Device_IP} configured successfully'
 
 
-'''
-  API GET requests
-    - OSPF neighborship
-    - Interfaces
-    - Device info
-    - HSRP status
-'''
-@app.get('/Devices/Info/AllDevices')
-def Device_info():
-    output =[]
-    for devices in R1_LAN, R1_EDGE, R2_EDGE, R1_VPN:
-        conn = ConnectHandler(**devices)
-        conn.enable()
-
-        result = conn.send_command('show version', use_textfsm=True)[0]
-        output.append(result)
-    return output
-
-
-'''
-  HSRP GET REQUEST
-   - Retrieves the HSRP status on the R1-Edge and R2-Edge
-'''    
-@app.get('/Devices/Info/HSRPStatus')
-def hsrp_info():
-    for devices in R1_EDGE, R2_EDGE:
-        conn = ConnectHandler(**devices)
-        conn.enable()
-
-        result = conn.send_command('show standby', use_textfsm=True)[0]
-    return result       
-    
-
-'''
-   OSPF GET routes
-'''
-@app.get('/Devices/Info/routes/R1_LAN')
-def ospf_get():
-     conn = ConnectHandler(**R1_LAN)
-     conn.enable()
-
-     result = conn.send_command('show ip route', use_textfsm=True)
-     return result
