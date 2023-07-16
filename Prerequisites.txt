@@ -1,0 +1,12 @@
+
+- OSPF Transport network connectivity between devices
+- Tunnelling/IPsec configured between R1-VPN and R2-VPN
+- SSH /AAA enabled on devices.
+  - SSH is used as the SBI by Netmiko to communicate with devices.
+
+- The project uses the following libraries:
+  - Netmiko (with TextFSM) 
+  - FastAPI
+  - Rich
+  - Requests
+
