@@ -9,6 +9,7 @@
     - QoS
     - Interface configuration
     - Tunnel configuration
+    - Control Plane Policing
 '''
 
 
@@ -365,7 +366,7 @@ def Intf_conf(post :tunnel_conf_class):
 '''
 class CoPP_class(BaseModel):
     Host_IP : str
-@app.post('/Devices/Configure/CoPP')
+@app.post('/Devices/Configure/CoPP',status_code=status.HTTP_201_CREATED)
 def CoPP_conf(post: CoPP_class):
     device   = {
                 'device_type': 'cisco_ios',
@@ -410,3 +411,4 @@ def CoPP_conf(post: CoPP_class):
     result = conn.send_config_set(commands)
     conn.save_config()
     return result.splitlines(), f'CoPP on Host_{post.Host_IP} configured successfully'
+
