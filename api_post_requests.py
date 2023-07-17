@@ -49,7 +49,7 @@ hsrp_data =  {
               'host_IP':'10.1.25.3',
               'virtual_IP':'10.1.25.254',
               'group_ID':25,
-              'HSRP_intf': 'e0/0.25',
+              'HSRP_intf':'e0/0.25',
               'priority': 100    
              }
 result = requests.post(hsrp_url,json=hsrp_data)
