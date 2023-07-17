@@ -146,7 +146,7 @@ else:
 
 
 '''
-  Configuring an Interface on R1-Edge
+  Configuring an Interface on R2-Edge
 '''
 intf_url = 'http://10.1.30.100:8000/Devices/Configure/Interface'
 
@@ -165,7 +165,7 @@ else:
 
 
 '''
-   Configuring HSRP on R1-Edge:
+   Configuring HSRP on R2-Edge:
 '''
 hsrp_url  = 'http://10.1.30.100:8000/Devices/Configure/HSRP'
 hsrp_data =  { 
