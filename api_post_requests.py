@@ -25,124 +25,124 @@ from rich import print as rp
 '''
    Configuring HSRP on R1-Edge:
 '''
-# hsrp_url = 'http://10.1.30.100:8000/Devices/Configure/HSRP'
-# data =  { 
-#             'host_IP':'10.1.25.2',
-#             'virtual_IP':'10.1.25.254',
-#             'group_ID':25,
-#             'HSRP_intf': 'e0/0.25',
-#             'priority': 110    
-#         }
-# result = requests.post(hsrp_url,json=data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' HSRP not configured!')
+hsrp_url = 'http://10.1.30.100:8000/Devices/Configure/HSRP'
+data =  { 
+            'host_IP':'10.1.25.2',
+            'virtual_IP':'10.1.25.254',
+            'group_ID':25,
+            'HSRP_intf': 'e0/0.25',
+            'priority': 110    
+        }
+result = requests.post(hsrp_url,json=data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' HSRP not configured!')
 
 
 
-# '''
-#    Configuring DHCP on R2-VPN
-# '''
-# rp(f'[cyan]{("-"*10)}Configuring DHCP{("-"*10)}[/cyan]')
-# dhcp_url  = 'http://10.1.30.100:8000/Devices/Configure/DHCP'
-# dhcp_data =  {
-#               'host_IP': '10.1.31.1',
-#               'network_and_mask': '10.1.31.0 255.255.255.0',
-#               'lowest_excluded_address': '10.1.31.1',
-#               'highest_excluded_address': '10.1.31.10',
-#               'gateway_IP': '10.1.31.1',
-#               'DHCP_pool_name':'BRANCH_LAN_DHCP'
-#              }
-# result = requests.post(dhcp_url, json=dhcp_data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' DHCP not configured!')
+'''
+   Configuring DHCP on R2-VPN
+'''
+rp(f'[cyan]{("-"*10)}Configuring DHCP{("-"*10)}[/cyan]')
+dhcp_url  = 'http://10.1.30.100:8000/Devices/Configure/DHCP'
+dhcp_data =  {
+              'host_IP': '10.1.31.1',
+              'network_and_mask': '10.1.31.0 255.255.255.0',
+              'lowest_excluded_address': '10.1.31.1',
+              'highest_excluded_address': '10.1.31.10',
+              'gateway_IP': '10.1.31.1',
+              'DHCP_pool_name':'BRANCH_LAN_DHCP'
+             }
+result = requests.post(dhcp_url, json=dhcp_data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' DHCP not configured!')
 
 
 
-# '''
-#    Configuring Syslog on R1-LAN.
-# '''
-# syslog_url = 'http://10.1.30.100:8000/Devices/Configure/Syslog'
-# syslog_data = {'Device_IP' : '10.1.30.1',
-#                'server_ip':'10.1.30.254'}
-# result = requests.post(syslog_url, json=syslog_data)
+'''
+   Configuring Syslog on R1-LAN.
+'''
+syslog_url = 'http://10.1.30.100:8000/Devices/Configure/Syslog'
+syslog_data = {'Device_IP' : '10.1.30.1',
+               'server_ip':'10.1.30.254'}
+result = requests.post(syslog_url, json=syslog_data)
 
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' Syslog not configured!')
-
-
-
-# '''
-#     NTP configuration.
-# '''
-# ntp_url  = 'http://10.1.30.100:8000/Devices/Configure/NTP'
-# ntp_data = {
-#              'Device_IP':'10.1.31.1',
-#              'ntp_server': '10.1.25.254'
-#            }
-# result   = requests.post(ntp_url, json=ntp_data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' NTP not configured!')
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' Syslog not configured!')
 
 
 
-# '''
-#    QoS configuration
-# '''
-# qos_url = 'http://10.1.30.100:8000/Devices/Configure/QoS'
-
-# QoS_data = {
-#             'Host_IP':'10.1.30.1',
-#             'Policy_name': 'NETWORK_POLICY',
-#             'Service_intf': 'e0/1.25',
-#             'Voice' : 10,
-#             'Realtime_video' : 20,
-#             'Critical_data' : 20,
-#             'Scavenger' : 1
-#            }
-# result = requests.post(qos_url, json=QoS_data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' QoS not configured!')
+'''
+    NTP configuration.
+'''
+ntp_url  = 'http://10.1.30.100:8000/Devices/Configure/NTP'
+ntp_data = {
+             'Device_IP':'10.1.31.1',
+             'ntp_server': '10.1.25.254'
+           }
+result   = requests.post(ntp_url, json=ntp_data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' NTP not configured!')
 
 
-# '''
-#    NetFlow configuration on R2-VPN Router
-# '''
-# flow_url = 'http://10.1.30.100:8000/Devices/Configure/NetFlow'
-# flow_data = {
-#              'Device_IP' : '10.1.31.1',
-#              'flow_intf' : 'e0/0',
-#              'udp_port'  : 9996,
-#              'dest_ip'   : '10.1.30.254'
-#             }
-# result = requests.post(flow_url, json=flow_data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' NetFlow not configured!')
+
+'''
+   QoS configuration
+'''
+qos_url = 'http://10.1.30.100:8000/Devices/Configure/QoS'
+
+QoS_data = {
+            'Host_IP':'10.1.30.1',
+            'Policy_name': 'NETWORK_POLICY',
+            'Service_intf': 'e0/1.25',
+            'Voice' : 10,
+            'Realtime_video' : 20,
+            'Critical_data' : 20,
+            'Scavenger' : 1
+           }
+result = requests.post(qos_url, json=QoS_data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' QoS not configured!')
 
 
-# '''
-#   Configuring SNMP
-# '''
-# snmp_url = 'http://10.1.30.100:8000/Devices/Configure/SNMP'
-# snmp_data = {'Device_IP':'10.1.25.2',
-#              'snmp_server_host': '10.1.30.254',
-#              'snmp_password': 'device_snmp'}
-# result = requests.post(snmp_url, json=snmp_data)
-# if result.status_code == 201:
-#     rp('Response:',result.status_code,'\n',result.json())
-# else:
-#     rp('Response:',result.status_code,' SNMP not configured!')
+'''
+   NetFlow configuration on R2-VPN Router
+'''
+flow_url = 'http://10.1.30.100:8000/Devices/Configure/NetFlow'
+flow_data = {
+             'Device_IP' : '10.1.31.1',
+             'flow_intf' : 'e0/0',
+             'udp_port'  : 9996,
+             'dest_ip'   : '10.1.30.254'
+            }
+result = requests.post(flow_url, json=flow_data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' NetFlow not configured!')
+
+
+'''
+  Configuring SNMP
+'''
+snmp_url = 'http://10.1.30.100:8000/Devices/Configure/SNMP'
+snmp_data = {'Device_IP':'10.1.25.2',
+             'snmp_server_host': '10.1.30.254',
+             'snmp_password': 'device_snmp'}
+result = requests.post(snmp_url, json=snmp_data)
+if result.status_code == 201:
+    rp('Response:',result.status_code,'\n',result.json())
+else:
+    rp('Response:',result.status_code,' SNMP not configured!')
 
 
 '''
