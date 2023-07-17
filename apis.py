@@ -358,3 +358,55 @@ def Intf_conf(post :tunnel_conf_class):
     result = conn.send_config_set(commands)
     return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{post.Host_IP} configured successfully'
 
+
+
+'''
+   CoPP configuration
+'''
+class CoPP_class(BaseModel):
+    Host_IP : str
+@app.post('/Devices/Configure/CoPP')
+def CoPP_conf(post: CoPP_class):
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : post.Host_IP
+               }
+    conn = ConnectHandler(**device)
+    conn.enable()
+
+    commands = [
+            #Configuring ACLs
+                 'ip access-list extended Route_acl',
+                 'permit ospf any host 224.0.0.5',
+                 'permit ospf any host 224.0.0.6',
+                 'ip access-list extended Mgt_acl',
+                 'permit udp any any eq 161',
+                 'permit tcp any any eq 22',
+                 'permit udp any any eq ntp',
+                 'ip access-list extended Icmp_acl',
+                 'permit icmp any any',
+            #Configuring CLass-maps
+                 'class-map Route_class',
+                 'match access-group name Route_acl',
+                 'class-map Mgt_class',
+                 'match access-group name Mgt_acl',
+                 'class-map Icmp_class',
+                 'match access-group name Icmp_acl',
+            #Configuring Policy maps
+                 'policy-map CoPP-Policy',
+                 'class Route_class',
+                 'police 128k conform-action transmit exceed-action transmit violate-action transmit',
+                 'class Mgt_class',
+                 'police 128k conform-action transmit exceed-action transmit violate-action transmit',
+                 'class Icmp_class',
+                 'police 8k conform-action transmit exceed-action transmit violate-action drop',
+            #Activating CoPP
+                 'control-plane',
+                 'service-policy input CoPP-Policy'     
+               ]
+    result = conn.send_config_set(commands)
+    conn.save_config()
+    return result.splitlines(), f'CoPP on Host_{post.Host_IP} configured successfully'

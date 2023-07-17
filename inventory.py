@@ -8,7 +8,7 @@ from rich import print as rp
 
 
 '''
-  Documenting Devices' Hostname,IP-address,Software-Version, Uptime
+  Documenting Devices' Hostname,IP-address,Software-Version,Uptime
 '''
 with open('/home/munia/Network_automation_with_API/Inventory/Inventory.csv', 'w')as f:
     write_data = csv.writer(f)
@@ -48,7 +48,7 @@ def backup_config():
         with open('RTR_'+ip,'w') as f:
             f.write(output)
         rp(f'[cyan] Finished backing up Host_{devices.get("ip")} running-config')
-schedule.every().day.at("15:15").do(backup_config) 
+schedule.every().day.at("15:00").do(backup_config) 
 while True:
     schedule.run_pending()
     time.sleep(1)
