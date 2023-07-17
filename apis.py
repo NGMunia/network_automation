@@ -52,7 +52,7 @@ def ntp_config(post: NTPClass):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result
+    return result.splitlines(), f'NTP on Host_{post.Device_IP} configured successfully'
     
 
 '''
@@ -180,7 +180,7 @@ def HSRP_Config(post: HSRP_class):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'HSRP on Host_{post.Device_IP} configured successfully'
+    return result.splitlines(), f'HSRP on Host_{post.host_IP} configured successfully'
 
 
 '''
@@ -216,7 +216,7 @@ def DHCP_Conf(post: DHCP_class):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'DHCP on Host_{post.Device_IP} configured successfully'
+    return result.splitlines(), f'DHCP on Host_{post.host_IP} configured successfully'
 
 
 '''
@@ -289,7 +289,7 @@ def QoS_config(post: QoS_profile_bandwidth):
                      'service-policy output '+post.Policy_name ]
         result = conn.send_config_set(commands)
         conn.save_config()       
-        return result.splitlines(), f'QoS on Host_{post.Device_IP} configured successfully'
+        return result.splitlines(), f'QoS on Host_{post.Host_IP} configured successfully'
 
 
 
@@ -299,6 +299,7 @@ def QoS_config(post: QoS_profile_bandwidth):
 class interface_conf_class(BaseModel):
     Host_IP : str
     interface_type : str
+    Description : str
     ip_address : str
     subnet_mask : str
 @app.post('/Devices/Configure/Interface', status_code=status.HTTP_201_CREATED)
@@ -308,18 +309,19 @@ def Intf_conf(post :interface_conf_class):
                 'username': 'Automation',
                 'password': 'cisco123',
                 'secret': 'cisco123',
-                'ip' : post.host_IP
+                'ip' : post.Host_IP
                }
     conn = ConnectHandler(**device)
     conn.enable()
 
     commands = [
                 'int '+post.interface_type,
-                'ip addresss '+post.ip_address+' '+post.subnet_mask,
+                'description '+post.Description,
+                'ip address '+post.ip_address+' '+post.subnet_mask,
                 'no shut'
                ]
     result = conn.send_config_set(commands)
-    return result.splitlines(), f'Interface {post.interface_type} on Host_{post.Device_IP} configured successfully'
+    return result.splitlines(), f'Interface {post.interface_type} on Host_{post.Host_IP} configured successfully'
 
 
 
@@ -354,6 +356,5 @@ def Intf_conf(post :tunnel_conf_class):
                 'no shut'
                ]
     result = conn.send_config_set(commands)
-    return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{post.Device_IP} configured successfully'
-
+    return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{post.Host_IP} configured successfully'
 
