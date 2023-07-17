@@ -48,8 +48,6 @@ def backup_config():
         with open('RTR_'+ip,'w') as f:
             f.write(output)
         rp(f'[cyan] Finished backing up Host_{devices.get("ip")} running-config')
-
-
 schedule.every().day.at("15:15").do(backup_config) 
 while True:
     schedule.run_pending()
