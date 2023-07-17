@@ -1,0 +1,198 @@
+Building configuration...
+
+Current configuration : 2611 bytes
+!
+! No configuration change since last restart
+!
+version 15.5
+service timestamps debug datetime localtime year
+service timestamps log datetime localtime year
+no service password-encryption
+!
+hostname R1-VPN
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$tICc$JilyviahfGdZj9ANWk5vX.
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+clock timezone GMT 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+ip domain name cisco.com
+ip name-server 8.8.8.8
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+cts logging verbose
+!
+!
+username Automation secret 5 $1$Sf8.$tUKNBvm0FRm3fCswdHyK.0
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+ip ssh version 2
+! 
+!
+!
+!
+!
+crypto isakmp policy 100
+ encr aes
+ authentication pre-share
+ group 14
+ lifetime 7200
+crypto isakmp key cisco123 address 14.5.6.2       
+!
+!
+crypto ipsec transform-set crypt_ts esp-aes esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile crypt_profile
+ set transform-set crypt_ts 
+!
+!
+!
+!
+!
+!
+!
+interface Tunnel10
+ ip address 172.16.10.1 255.255.255.252
+ ip ospf 1 area 0
+ tunnel source Ethernet0/1
+ tunnel mode ipsec ipv4
+ tunnel destination 14.5.6.2
+ tunnel protection ipsec profile crypt_profile
+!
+interface Ethernet0/0
+ no ip address
+!
+interface Ethernet0/0.10
+ description Area-0-R1_LAN-link
+ encapsulation dot1Q 10
+ ip address 10.1.0.2 255.255.255.252
+ ip ospf network point-to-point
+ ip ospf 1 area 0
+!
+interface Ethernet0/1
+ ip address 11.2.3.2 255.255.255.252
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ no ip address
+ shutdown
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 2.2.2.2
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 14.5.6.2 255.255.255.255 11.2.3.1
+!
+ip access-list standard SNMP
+ permit 10.1.30.254
+!
+!
+snmp-server community device_snmp RO SNMP
+snmp-server system-shutdown
+snmp-server enable traps config
+snmp-server host 10.1.30.254 version 2c device_snmp 
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ transport input ssh
+!
+ntp update-calendar
+ntp server 10.1.25.254
+!
+end

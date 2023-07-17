@@ -1,0 +1,226 @@
+Building configuration...
+
+Current configuration : 3182 bytes
+!
+! No configuration change since last restart
+!
+version 15.5
+service timestamps debug datetime localtime year
+service timestamps log datetime localtime year
+no service password-encryption
+!
+hostname R1-LAN
+!
+boot-start-marker
+boot-end-marker
+!
+!
+logging monitor informational
+enable secret 5 $1$W5et$l.2RDulE7kBNoYGoZU0ih1
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+clock timezone GMT 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+ip dhcp pool LAN_DHCP
+ network 10.0.0.0 255.0.0.0
+ default-router 10.1.30.1 
+ dns-server 8.8.8.8 
+!
+!
+!
+ip domain name cisco.com
+ip name-server 8.8.8.8
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+cts logging verbose
+!
+!
+username Automation secret 5 $1$DoKu$JRFltOsQIQm0J6m/JabKd/
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+ip ssh version 2
+!
+class-map match-any Realtime_class
+ match protocol rtp-video
+ match dscp af41 
+class-map match-any Critical_data_class
+ match protocol dns
+ match dscp af31 
+class-map match-any Voice_class
+ match dscp ef 
+ match protocol rtp-audio
+class-map match-any Scavenger_class
+ match protocol bittorrent
+ match protocol netflix
+ match dscp cs1 
+!
+policy-map NETWORK_POLICY
+ class Scavenger_class
+  set dscp cs1
+  bandwidth percent 1 
+ class Voice_class
+  set dscp ef
+  priority level 1 percent 10
+ class Realtime_class
+  set dscp af41
+  priority level 2 percent 20
+ class Critical_data_class
+  set dscp af31
+  bandwidth percent 20 
+ class class-default
+  fair-queue
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ ip address 10.1.30.1 255.255.255.0
+ ip ospf 1 area 30
+!
+interface Ethernet0/1
+ no ip address
+!
+interface Ethernet0/1.10
+ description Area-0-VPN-routers-link
+ encapsulation dot1Q 10
+ ip address 10.1.0.1 255.255.255.252
+ ip ospf network point-to-point
+ ip ospf 1 area 0
+!
+interface Ethernet0/1.25
+ description Area-25-Firewalls-link
+ encapsulation dot1Q 25
+ ip address 10.1.25.1 255.255.255.0
+ ip ospf priority 255
+ ip ospf 1 area 25
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ no ip address
+ shutdown
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 1.1.1.1
+ redistribute static subnets
+ default-information originate
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 10.1.25.254
+!
+ip access-list standard SNMP
+ permit 10.1.30.254
+!
+logging host 10.1.30.254
+!
+snmp-server community device_snmp RO SNMP
+snmp-server system-shutdown
+snmp-server enable traps config
+snmp-server host 10.1.30.254 version 2c device_snmp 
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ transport input ssh
+!
+ntp update-calendar
+ntp server 10.1.25.254
+!
+end

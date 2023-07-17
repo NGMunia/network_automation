@@ -1,0 +1,241 @@
+Building configuration...
+
+Current configuration : 3862 bytes
+!
+! Last configuration change at 10:59:58 GMT Mon Jul 17 2023 by Automation
+! NVRAM config last updated at 10:59:59 GMT Mon Jul 17 2023 by Automation
+!
+version 15.5
+service timestamps debug datetime localtime year
+service timestamps log datetime localtime year
+no service password-encryption
+!
+hostname R2-Edge
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$CjWH$iy7oGi875d6PQO6FW60WN.
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+clock timezone GMT 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+ip domain name cisco.com
+ip name-server 8.8.8.8
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+cts logging verbose
+!
+!
+username Automation secret 5 $1$1YID$w3YHLaC2um0TaljcLoeA90
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+ip ssh version 2
+!
+class-map type inspect match-all In_Out_class
+ match access-group name Inside_Outside_acl
+class-map type inspect match-all DMZ_Out_class
+ match access-group name DMZ_Outside_acl
+!
+policy-map type inspect In_Out_Policy
+ class type inspect In_Out_class
+  inspect 
+ class class-default
+  drop
+policy-map type inspect DMZ_Out_Policy
+ class type inspect DMZ_Out_class
+  inspect 
+ class class-default
+  drop
+!
+zone security Inside
+zone security Outside
+zone security DMZ
+zone-pair security In_Out_Zone source Inside destination Outside
+ service-policy type inspect In_Out_Policy
+zone-pair security DMZ_Out_Zone source DMZ destination Outside
+ service-policy type inspect DMZ_Out_Policy
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no ip address
+!
+interface Ethernet0/0.25
+ description Area-25-R1_LAN-link
+ encapsulation dot1Q 25
+ ip address 10.1.25.3 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ zone-member security Inside
+ standby version 2
+ standby 25 ip 10.1.25.254
+ standby 25 preempt
+ ip ospf priority 0
+ ip ospf 1 area 25
+!
+interface Ethernet0/0.99
+ description Link-to-DMZ-Network
+ encapsulation dot1Q 99
+ ip address 10.1.99.3 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ zone-member security DMZ
+ standby version 2
+ standby 99 ip 10.1.99.254
+ standby 99 priority 110
+ standby 99 preempt
+!
+interface Ethernet0/1
+ ip address 32.19.86.2 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+ zone-member security Outside
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ no ip address
+ shutdown
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 4.4.4.4
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list nat_acl interface Ethernet0/1 overload
+ip route 0.0.0.0 0.0.0.0 32.19.86.1
+!
+ip access-list standard SNMP
+ permit 10.1.30.254
+ip access-list standard nat_acl
+ permit 10.1.30.0 0.0.1.255
+ permit 10.1.99.0 0.0.0.255
+!
+ip access-list extended DMZ_Outside_acl
+ permit tcp any any eq 443
+ permit tcp any any eq www
+ permit udp any any eq domain
+ip access-list extended Inside_Outside_acl
+ permit tcp any any
+ permit udp any any
+ permit icmp any any
+!
+ip sla 25
+ icmp-echo 32.19.86.1
+ frequency 10
+ip sla schedule 25 life forever start-time now
+!
+snmp-server community device_snmp RO SNMP
+snmp-server system-shutdown
+snmp-server enable traps config
+snmp-server host 10.1.30.254 version 2c device_snmp 
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ transport input ssh
+!
+ntp update-calendar
+ntp server ke.pool.ntp.org
+!
+end
