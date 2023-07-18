@@ -10,4 +10,8 @@
   - Rich
   - Requests
 
-
+- Images used:
+  - Routers: i86bi-linux-l3-adventerprisek9-ms.155-2.T.bin
+  - ISP-SW: i86bi_linux_l2-adventerprise-ms.high_iron_20170202.bin
+  - Access/DMZ : i86bi-linux-l2-adventerprisek9-15.2d.bin
+  - Webterm docker
