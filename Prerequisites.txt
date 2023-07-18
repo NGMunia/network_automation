@@ -6,7 +6,8 @@
 
 - The project uses the following libraries:
   - Netmiko (with TextFSM) 
-  - FastAPI
+  - FastAPI - for creating REST APIs (NBI)
   - Rich
   - Requests
+
 
