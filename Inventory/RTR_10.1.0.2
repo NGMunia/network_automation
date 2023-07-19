@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 2611 bytes
+Current configuration : 2482 bytes
 !
-! No configuration change since last restart
+! Last configuration change at 14:46:21 GMT Wed Jul 19 2023 by Automation
 !
 version 15.5
 service timestamps debug datetime localtime year
@@ -15,7 +15,7 @@ boot-start-marker
 boot-end-marker
 !
 !
-enable secret 5 $1$tICc$JilyviahfGdZj9ANWk5vX.
+enable secret 5 $1$22.v$W6PplTpqJN29zogWw.yGz.
 !
 aaa new-model
 !
@@ -56,7 +56,7 @@ no ip icmp rate-limit unreachable
 !
 !
 !
-ip domain name cisco.com
+ip domain name abc.com
 ip name-server 8.8.8.8
 ip cef
 no ipv6 cef
@@ -72,7 +72,7 @@ multilink bundle-name authenticated
 cts logging verbose
 !
 !
-username Automation secret 5 $1$Sf8.$tUKNBvm0FRm3fCswdHyK.0
+username Automation secret 5 $1$0c7a$2afat/2EijulGGSIV3fVe/
 !
 redundancy
 !
@@ -107,6 +107,7 @@ crypto ipsec profile crypt_profile
 !
 interface Tunnel10
  ip address 172.16.10.1 255.255.255.252
+ ip mtu 1400
  ip ospf 1 area 0
  tunnel source Ethernet0/1
  tunnel mode ipsec ipv4
@@ -117,13 +118,14 @@ interface Ethernet0/0
  no ip address
 !
 interface Ethernet0/0.10
- description Area-0-R1_LAN-link
+ description Link-to-R1-LAN
  encapsulation dot1Q 10
  ip address 10.1.0.2 255.255.255.252
  ip ospf network point-to-point
  ip ospf 1 area 0
 !
 interface Ethernet0/1
+ description Tunnel_interface_source
  ip address 11.2.3.2 255.255.255.252
 !
 interface Ethernet0/2
@@ -151,7 +153,7 @@ interface Ethernet1/3
  shutdown
 !
 router ospf 1
- router-id 2.2.2.2
+ router-id 172.16.10.1
 !
 ip forward-protocol nd
 !
@@ -160,14 +162,7 @@ no ip http server
 no ip http secure-server
 ip route 14.5.6.2 255.255.255.255 11.2.3.1
 !
-ip access-list standard SNMP
- permit 10.1.30.254
 !
-!
-snmp-server community device_snmp RO SNMP
-snmp-server system-shutdown
-snmp-server enable traps config
-snmp-server host 10.1.30.254 version 2c device_snmp 
 !
 !
 !

@@ -1,22 +1,21 @@
 Building configuration...
 
-Current configuration : 3936 bytes
+Current configuration : 3301 bytes
 !
-! Last configuration change at 10:59:05 GMT Mon Jul 17 2023 by Automation
-! NVRAM config last updated at 10:59:07 GMT Mon Jul 17 2023 by Automation
+! No configuration change since last restart
 !
 version 15.5
 service timestamps debug datetime localtime year
 service timestamps log datetime localtime year
 no service password-encryption
 !
-hostname R1-Edge
+hostname FW1
 !
 boot-start-marker
 boot-end-marker
 !
 !
-enable secret 5 $1$Y5td$xTAkEf6CG1FYIXAlxvzQo/
+enable secret 5 $1$oeTZ$BkThgFESSu9Gukhf5jXC81
 !
 aaa new-model
 !
@@ -57,7 +56,7 @@ no ip icmp rate-limit unreachable
 !
 !
 !
-ip domain name cisco.com
+ip domain name abc.com
 ip name-server 8.8.8.8
 ip cef
 no ipv6 cef
@@ -73,41 +72,38 @@ multilink bundle-name authenticated
 cts logging verbose
 !
 !
-username Automation secret 5 $1$9C1e$AKLzCDC1rP1LIfaWeIKqZ/
+username Automation secret 5 $1$H6be$kWSsPEaMkz.1rNYt9mlpg0
 !
 redundancy
 !
 no cdp log mismatch duplex
 !
-track 25 ip sla 25
- delay down 5 up 5
-!
 ip tcp synwait-time 5
 ip ssh version 2
 !
 class-map type inspect match-all In_Out_class
- match access-group name Inside_Outside_acl
+ match access-group name In_Out_acl
 class-map type inspect match-all DMZ_Out_class
- match access-group name DMZ_Outside_acl
+ match access-group name DMZ_Out_acl
 !
-policy-map type inspect In_Out_Policy
- class type inspect In_Out_class
+policy-map type inspect DMZ_Out_policy
+ class type inspect DMZ_Out_class
   inspect 
  class class-default
   drop
-policy-map type inspect DMZ_Out_Policy
- class type inspect DMZ_Out_class
+policy-map type inspect In_Out_class
+ class type inspect In_Out_class
   inspect 
  class class-default
   drop
 !
 zone security Inside
-zone security Outside
+zone security OUtside
 zone security DMZ
-zone-pair security In_Out_Zone source Inside destination Outside
- service-policy type inspect In_Out_Policy
-zone-pair security DMZ_Out_Zone source DMZ destination Outside
- service-policy type inspect DMZ_Out_Policy
+zone-pair security In_Out_zone source Inside destination OUtside
+ service-policy type inspect In_Out_class
+zone-pair security DMZ_Out_Zone source DMZ destination OUtside
+ service-policy type inspect DMZ_Out_policy
 ! 
 !
 !
@@ -122,11 +118,7 @@ zone-pair security DMZ_Out_Zone source DMZ destination Outside
 !
 !
 interface Ethernet0/0
- no ip address
-!
-interface Ethernet0/0.25
- description Area-25-R1_LAN-link
- encapsulation dot1Q 25
+ description link-to-Inside-network
  ip address 10.1.25.2 255.255.255.0
  ip nat inside
  ip virtual-reassembly in
@@ -135,26 +127,22 @@ interface Ethernet0/0.25
  standby 25 ip 10.1.25.254
  standby 25 priority 110
  standby 25 preempt
- standby 25 track 25 decrement 30
  ip ospf priority 0
  ip ospf 1 area 25
 !
 interface Ethernet0/0.99
- description Link-to-DMZ-Network
+ description Link_to_DMZ_network
  encapsulation dot1Q 99
  ip address 10.1.99.2 255.255.255.0
  ip nat inside
  ip virtual-reassembly in
  zone-member security DMZ
- standby version 2
- standby 99 ip 10.1.99.254
- standby 99 preempt
 !
 interface Ethernet0/1
  ip address 44.67.28.2 255.255.255.252
  ip nat outside
  ip virtual-reassembly in
- zone-member security Outside
+ zone-member security OUtside
 !
 interface Ethernet0/2
  no ip address
@@ -181,7 +169,7 @@ interface Ethernet1/3
  shutdown
 !
 router ospf 1
- router-id 3.3.3.3
+ router-id 2.2.2.2
 !
 ip forward-protocol nd
 !
@@ -191,30 +179,20 @@ no ip http secure-server
 ip nat inside source list nat_acl interface Ethernet0/1 overload
 ip route 0.0.0.0 0.0.0.0 44.67.28.1
 !
-ip access-list standard SNMP
- permit 10.1.30.254
 ip access-list standard nat_acl
  permit 10.1.30.0 0.0.1.255
  permit 10.1.99.0 0.0.0.255
 !
-ip access-list extended DMZ_Outside_acl
+ip access-list extended DMZ_Out_acl
  permit tcp any any eq 443
  permit tcp any any eq www
  permit udp any any eq domain
-ip access-list extended Inside_Outside_acl
+ip access-list extended In_Out_acl
  permit tcp any any
- permit udp any any
  permit icmp any any
+ permit udp any any
 !
-ip sla 25
- icmp-echo 44.67.28.1
- frequency 10
-ip sla schedule 25 life forever start-time now
 !
-snmp-server community device_snmp RO SNMP
-snmp-server system-shutdown
-snmp-server enable traps config
-snmp-server host 10.1.30.254 version 2c device_snmp 
 !
 !
 !

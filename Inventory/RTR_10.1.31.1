@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 2603 bytes
+Current configuration : 2645 bytes
 !
-! No configuration change since last restart
+! Last configuration change at 14:45:41 GMT Wed Jul 19 2023 by Automation
 !
 version 15.5
 service timestamps debug datetime localtime year
@@ -114,6 +114,7 @@ crypto ipsec profile crypt_profile
 !
 interface Tunnel10
  ip address 172.16.10.2 255.255.255.252
+ ip mtu 1400
  ip ospf 1 area 0
  tunnel source Ethernet0/1
  tunnel mode ipsec ipv4

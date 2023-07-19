@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 3182 bytes
+Current configuration : 2962 bytes
 !
-! No configuration change since last restart
+! Last configuration change at 14:30:22 GMT Wed Jul 19 2023 by Automation
 !
 version 15.5
 service timestamps debug datetime localtime year
@@ -15,8 +15,7 @@ boot-start-marker
 boot-end-marker
 !
 !
-logging monitor informational
-enable secret 5 $1$W5et$l.2RDulE7kBNoYGoZU0ih1
+enable secret 5 $1$BIVr$mqNgwGE6kVaCpmwaoX8SZ.
 !
 aaa new-model
 !
@@ -55,14 +54,9 @@ no ip icmp rate-limit unreachable
 
 !
 !
-ip dhcp pool LAN_DHCP
- network 10.0.0.0 255.0.0.0
- default-router 10.1.30.1 
- dns-server 8.8.8.8 
 !
 !
-!
-ip domain name cisco.com
+ip domain name abc.com
 ip name-server 8.8.8.8
 ip cef
 no ipv6 cef
@@ -78,7 +72,7 @@ multilink bundle-name authenticated
 cts logging verbose
 !
 !
-username Automation secret 5 $1$DoKu$JRFltOsQIQm0J6m/JabKd/
+username Automation secret 5 $1$JPU2$6WTlic0YarvWUTiN6Hljb0
 !
 redundancy
 !
@@ -99,6 +93,9 @@ class-map match-any Voice_class
 class-map match-any Scavenger_class
  match protocol bittorrent
  match protocol netflix
+ match protocol facebook
+ match protocol instagram
+ match protocol twitter
  match dscp cs1 
 !
 policy-map NETWORK_POLICY
@@ -135,21 +132,17 @@ interface Ethernet0/0
  ip ospf 1 area 30
 !
 interface Ethernet0/1
- no ip address
+ description Link-to-Firewalls
+ ip address 10.1.25.1 255.255.255.0
+ ip ospf priority 25
+ ip ospf 1 area 25
+ service-policy output NETWORK_POLICY
 !
 interface Ethernet0/1.10
- description Area-0-VPN-routers-link
  encapsulation dot1Q 10
  ip address 10.1.0.1 255.255.255.252
  ip ospf network point-to-point
  ip ospf 1 area 0
-!
-interface Ethernet0/1.25
- description Area-25-Firewalls-link
- encapsulation dot1Q 25
- ip address 10.1.25.1 255.255.255.0
- ip ospf priority 255
- ip ospf 1 area 25
 !
 interface Ethernet0/2
  no ip address
@@ -177,7 +170,6 @@ interface Ethernet1/3
 !
 router ospf 1
  router-id 1.1.1.1
- redistribute static subnets
  default-information originate
 !
 ip forward-protocol nd
@@ -187,15 +179,11 @@ no ip http server
 no ip http secure-server
 ip route 0.0.0.0 0.0.0.0 10.1.25.254
 !
-ip access-list standard SNMP
- permit 10.1.30.254
+ip access-list extended SSH_vty_Access
+ permit tcp 10.1.30.0 0.0.0.255 any eq 22
+ deny   tcp any any log
 !
-logging host 10.1.30.254
 !
-snmp-server community device_snmp RO SNMP
-snmp-server system-shutdown
-snmp-server enable traps config
-snmp-server host 10.1.30.254 version 2c device_snmp 
 !
 !
 !
@@ -218,6 +206,7 @@ line aux 0
  privilege level 15
  logging synchronous
 line vty 0 4
+ access-class SSH_vty_Access in
  transport input ssh
 !
 ntp update-calendar

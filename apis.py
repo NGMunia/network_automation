@@ -10,6 +10,7 @@
     - Interface configuration
     - Tunnel configuration
     - Control Plane Policing
+    - Embedded event manager
 '''
 
 
@@ -255,6 +256,9 @@ def QoS_config(post: QoS_profile_bandwidth):
                      'class-map match-any Scavenger_class',
                      'match protocol bittorrent',
                      'match protocol netflix',
+                     'match protocol facebook',
+                     'match protocol instagram',
+                     'match protocol twitter',
                      'match dscp cs1',
                      'class-map match-any Voice_class',
                      'match dscp ef',
@@ -354,7 +358,7 @@ def Intf_conf(post :tunnel_conf_class):
                 'tunnel source '+post.tunnel_src,
                 'tunnel destination '+post.tunnel_dest,
                 'ip address '+post.ip_address+' '+post.subnet_mask,
-                'no shut'
+                'ip mtu 1400'
                ]
     result = conn.send_config_set(commands)
     return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{post.Host_IP} configured successfully'
@@ -412,3 +416,81 @@ def CoPP_conf(post: CoPP_class):
     conn.save_config()
     return result.splitlines(), f'CoPP on Host_{post.Host_IP} configured successfully'
 
+
+
+'''
+  Configuring EEM for automatic Config Backup
+'''
+class EEM_Class(BaseModel):
+    Host_IP : str
+    filename : str
+    tftp_server : str
+@app.post('/Devices/Configure/EEM', status_code=status.HTTP_201_CREATED)
+def EEM_config(post: EEM_Class):
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : post.Host_IP
+               }
+    conn = ConnectHandler(**device)
+    conn.enable()
+    commands = [
+                'event-manager environment filename '+post.filename,
+                'event-manager environment tftpserver tftp://'+post.tftp_server+'/',
+                'event-manager applet AUTOMATIC_CONFIG_BACKUP',
+                'event-timer cron cron-entry "30 23 * * 1-6"',
+                'action 1.0 cli command "enable"',
+                'action 1.1 cli command "debug event manager action cli"',
+                'action 1.2 cli command "conf t"',
+                'action 1.3 cli command "file prompt quiet"',
+                'action 1.4 cli command "do copy run $tftpserver$filename"',
+                'action 1.5 cli command "no file prompt quiet"',
+                'action 1.6 syslog priority informational msg "Backup Successful!"'
+               ]
+    result = conn.send_config_set(commands)
+    conn.save_config()
+    return result.splitlines(), f'EEM on Host {post.Host_IP} Configured successfully!'
+    
+
+
+'''
+  API GET
+    - show interfaces brief
+'''
+@app.get('/GET/Devices/{device_ip}/interfaces')
+def intf_status(device_ip: str):
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : device_ip
+               }
+    
+    conn = ConnectHandler(**device)
+    conn.enable()
+
+    result = conn.send_command('show ip interface brief', use_textfsm=True)
+    return result 
+    
+
+'''
+   API GET
+   - Device information
+'''
+@app.get('/GET/Devices/{device_ip}/version')
+def Device_info(device_ip : str):
+    device   = {
+                'device_type': 'cisco_ios',
+                'username': 'Automation',
+                'password': 'cisco123',
+                'secret': 'cisco123',
+                'ip' : device_ip
+               }
+    conn = ConnectHandler(**device)
+    conn.enable()
+
+    result = conn.send_command('show version', use_textfsm=True)
+    return result 
