@@ -182,3 +182,10 @@ else:
     rp('Response:',result.status_code,' HSRP not configured!')
 
 
+
+'''
+  API GET request
+'''
+intf_url = 'http://10.1.30.100:8000/GET/Devices/10.1.25.2/interfaces'
+result = requests.get(intf_url).json()
+rp(type(result))
