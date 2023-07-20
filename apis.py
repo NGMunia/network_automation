@@ -17,7 +17,6 @@
 from fastapi import FastAPI, status, HTTPException
 from netmiko import ConnectHandler
 from pydantic import BaseModel
-from Devices.Device_list import R1_LAN, R1_EDGE, R2_EDGE, R1_VPN, R2_VPN
 import ntc_templates
 
 
