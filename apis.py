@@ -18,6 +18,7 @@ from fastapi import FastAPI, status, HTTPException
 from netmiko import ConnectHandler
 from pydantic import BaseModel
 import ntc_templates
+from Models import models
 
 
 app = FastAPI()
@@ -28,10 +29,8 @@ app = FastAPI()
      - Configures NTP server.
      - Updates login and debug timestamps to NTP server time.
 '''
-class NTPClass (BaseModel):
-    ntp_server : str
 @app.post('/Devices/{Device_ID}/Configure/NTP', status_code = status.HTTP_201_CREATED)
-def ntp_config(post: NTPClass, Device_ID : str):
+def ntp_config(post: models.NTPClass, Device_ID: str):
     device = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -47,17 +46,13 @@ def ntp_config(post: NTPClass, Device_ID : str):
     result = conn.send_config_set(commands)
     conn.save_config()
     return result.splitlines(), f'NTP on Host_{Device_ID} configured successfully'
-    
 
 '''
     SNMP POST:
       - Configures SNMP on all devices
 '''
-class SNMPClass(BaseModel):
-    snmp_server_host : str
-    snmp_password : str
 @app.post('/Devices/{Device_ID}/Configure/SNMP', status_code = status.HTTP_201_CREATED)
-def snmpconf(post: SNMPClass, Device_ID:str):
+def snmpconf(post: models.SNMPClass, Device_ID:str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -79,12 +74,8 @@ def snmpconf(post: SNMPClass, Device_ID:str):
       - Configures Top-talkers
       - Activates NBAR
 '''
-class Netflow_Class(BaseModel):
-    flow_intf : str
-    udp_port  : int
-    dest_ip   : str
 @app.post('/Devices/{Device_ID}/Configure/NetFlow', status_code = status.HTTP_201_CREATED)
-def netflowconf(post: Netflow_Class, Device_ID:str):
+def netflowconf(post: models.Netflow_Class, Device_ID:str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -106,10 +97,8 @@ def netflowconf(post: Netflow_Class, Device_ID:str):
     SYSLOG POST:
       - Configures Syslog on all network devices.
 '''
-class Syslog_class(BaseModel):
-    server_ip : str
 @app.post('/Devices/{Device_ID}/Configure/Syslog', status_code = status.HTTP_201_CREATED)
-def syslog_conf(post: Syslog_class, Device_ID: str):
+def syslog_conf(post: models.Syslog_class, Device_ID: str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -125,13 +114,8 @@ def syslog_conf(post: Syslog_class, Device_ID: str):
     HSRP POST:
       - Configuring HSRP
 '''
-class HSRP_class(BaseModel):
-    virtual_IP : str
-    group_ID : int
-    HSRP_intf : str
-    priority : int
 @app.post('/Devices/{Device_ID}/Configure/HSRP', status_code = status.HTTP_201_CREATED)
-def HSRP_Config(post: HSRP_class, Device_ID: str):
+def HSRP_Config(post: models.HSRP_class, Device_ID: str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -151,14 +135,8 @@ def HSRP_Config(post: HSRP_class, Device_ID: str):
     DHCP POST
       - Configures DHCP
 '''
-class DHCP_class(BaseModel):
-    network_and_mask : str
-    lowest_excluded_address : str
-    highest_excluded_address : str
-    gateway_IP : str
-    DHCP_pool_name : str
 @app.post('/Devices/{Device_ID}/Configure/DHCP', status_code = status.HTTP_201_CREATED)
-def DHCP_Conf(post: DHCP_class, Device_ID: str):
+def DHCP_Conf(post: models.DHCP_class, Device_ID: str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -178,15 +156,8 @@ def DHCP_Conf(post: DHCP_class, Device_ID: str):
 '''
   QoS configuration
 '''
-class QoS_profile_bandwidth(BaseModel):
-    Policy_name : str
-    Service_intf: str
-    Voice : int
-    Realtime_video : int
-    Critical_data : int
-    Scavenger : int
 @app.post('/Devices/{Device_ID}/Configure/QoS', status_code=status.HTTP_201_CREATED)
-def QoS_config(post: QoS_profile_bandwidth, Device_ID:str):
+def QoS_config(post: models.QoS_profile_bandwidth, Device_ID:str):
     sum_bandwidth = (post.Voice + post.Realtime_video + post.Critical_data 
                      +post.Scavenger)
     
@@ -247,13 +218,8 @@ def QoS_config(post: QoS_profile_bandwidth, Device_ID:str):
 '''
   API POST Configuring Ethernet and Loopback Interfaces
 '''
-class interface_conf_class(BaseModel):
-    interface_type : str
-    Description : str
-    ip_address : str
-    subnet_mask : str
 @app.post('/Devices/{Device_ID}/Configure/Interface', status_code=status.HTTP_201_CREATED)
-def Intf_conf(post :interface_conf_class, Device_ID: str):
+def Intf_conf(post : models.interface_conf_class, Device_ID: str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -270,15 +236,8 @@ def Intf_conf(post :interface_conf_class, Device_ID: str):
 '''
    API POST Configuring GRE tunnel interfaces
 '''
-class tunnel_conf_class(BaseModel):
-    tunnel_id : int
-    tunnel_src : str
-    tunnel_dest : str
-    ip_address : str
-    subnet_mask : str
-
 @app.post('/Devices/{Device_ID}/Configure/Interface/Tunnel', status_code=status.HTTP_201_CREATED)
-def Intf_conf(post :tunnel_conf_class, Device_ID:str):
+def Intf_conf(post : models.tunnel_conf_class, Device_ID:str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
@@ -293,7 +252,6 @@ def Intf_conf(post :tunnel_conf_class, Device_ID:str):
     return result.splitlines(), f'Tunnel{post.tunnel_id} on {Device_ID} configured successfully'
 
 
-
 '''
    CoPP configuration
 '''
@@ -302,37 +260,8 @@ def CoPP_conf(Device_ID: str):
     device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-    commands = [
-            #Configuring ACLs
-                 'ip access-list extended Route_acl',
-                 'permit ospf any host 224.0.0.5',
-                 'permit ospf any host 224.0.0.6',
-                 'ip access-list extended Mgt_acl',
-                 'permit udp any any eq 161',
-                 'permit tcp any any eq 22',
-                 'permit udp any any eq ntp',
-                 'ip access-list extended Icmp_acl',
-                 'permit icmp any any',
-            #Configuring CLass-maps
-                 'class-map Route_class',
-                 'match access-group name Route_acl',
-                 'class-map Mgt_class',
-                 'match access-group name Mgt_acl',
-                 'class-map Icmp_class',
-                 'match access-group name Icmp_acl',
-            #Configuring Policy maps
-                 'policy-map CoPP-Policy',
-                 'class Route_class',
-                 'police 128k conform-action transmit exceed-action transmit violate-action transmit',
-                 'class Mgt_class',
-                 'police 128k conform-action transmit exceed-action transmit violate-action transmit',
-                 'class Icmp_class',
-                 'police 8k conform-action transmit exceed-action transmit violate-action drop',
-            #Activating CoPP
-                 'control-plane',
-                 'service-policy input CoPP-Policy'     
-               ]
-    result = conn.send_config_set(commands)
+    from Models.models import CoPP 
+    result = conn.send_config_set(CoPP)
     conn.save_config()
     return result.splitlines(), f'CoPP on {Device_ID} configured successfully'
 

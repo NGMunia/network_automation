@@ -1,6 +1,6 @@
 Hostname,IP address,Software Version,Serial-No,Uptime
-R1-LAN,10.1.30.1,15.5(2)T,['2048004'],"7 hours, 55 minutes"
-R1-Edge,10.1.25.2,15.5(2)T,['2048002'],"7 hours, 55 minutes"
-R2-Edge,10.1.25.3,15.5(2)T,['2048001'],"7 hours, 55 minutes"
-R1-VPN,10.1.0.2,15.5(2)T,['2048005'],"7 hours, 55 minutes"
-R2-VPN,10.1.31.1,15.5(2)T,['2048006'],"7 hours, 55 minutes"
+R1-LAN,10.1.30.1,15.5(2)T,['2048012'],"1 hour, 4 minutes"
+R1-VPN,10.1.0.2,15.5(2)T,['2048013'],"1 hour, 4 minutes"
+R2-VPN,10.1.31.1,15.5(2)T,['2048009'],"1 hour, 4 minutes"
+FW1,10.1.25.2,15.5(2)T,['2048014'],"1 hour, 4 minutes"
+FW2,10.1.25.3,15.5(2)T,['2048015'],"1 hour, 4 minutes"
