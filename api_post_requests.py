@@ -10,6 +10,7 @@ HTTP requests methods:
 
 import requests
 from rich import print as rp
+from Devices.Device_list import Routers
 
 '''
   When writing a POST request:
@@ -25,7 +26,7 @@ from rich import print as rp
 '''
    Configuring HSRP on R1-Edge:
 '''
-hsrp_url = 'http://10.1.30.100:8000/Devices/10.1.25.2/Configure/HSRP'
+hsrp_url = 'http://10.1.30.100:8000/Devices/R1_EDGE/Configure/HSRP'
 data =  { 
             'virtual_IP':'10.1.25.254',
             'group_ID':25,
@@ -43,7 +44,7 @@ else:
 '''
    Configuring DHCP on R2-VPN
 '''
-dhcp_url  = 'http://10.1.30.100:8000/Devices/10.1.31.1/Configure/DHCP'
+dhcp_url  = 'http://10.1.30.100:8000/Devices/R2_VPN/Configure/DHCP'
 dhcp_data =  {
               'network_and_mask': '10.1.31.0 255.255.255.0',
               'lowest_excluded_address': '10.1.31.1',
@@ -62,7 +63,7 @@ else:
 '''
    Configuring Syslog on R1-LAN.
 '''
-syslog_url = 'http://10.1.30.100:8000/Devices/10.1.30.1/Configure/Syslog'
+syslog_url = 'http://10.1.30.100:8000/Devices/R1_LAN/Configure/Syslog'
 syslog_data = {'server_ip':'10.1.30.254'}
 result = requests.post(syslog_url, json=syslog_data)
 
@@ -76,7 +77,7 @@ else:
 '''
     NTP configuration.
 '''
-ntp_url  = 'http://10.1.30.100:8000/Devices/10.1.25.2/Configure/NTP'
+ntp_url  = 'http://10.1.30.100:8000/Devices/R1_EDGE/Configure/NTP'
 ntp_data = {'ntp_server': '10.1.25.254'}
 result   = requests.post(ntp_url, json=ntp_data)
 if result.status_code == 201:
@@ -89,7 +90,7 @@ else:
 '''
    QoS configuration
 '''
-qos_url = 'http://10.1.30.100:8000/Devices/10.1.30.1/Configure/QoS'
+qos_url = 'http://10.1.30.100:8000/Devices/R1_LAN/Configure/QoS'
 
 QoS_data = {
             'Policy_name': 'NETWORK_POLICY',
@@ -109,7 +110,7 @@ else:
 '''
    NetFlow configuration on R2-VPN Router
 '''
-flow_url = 'http://10.1.30.100:8000/Devices/10.1.31.1/Configure/NetFlow'
+flow_url = 'http://10.1.30.100:8000/Devices/R2_VPN/Configure/NetFlow'
 flow_data = {
              'flow_intf' : 'e0/0',
              'udp_port'  : 9996,
@@ -125,7 +126,7 @@ else:
 '''
   Configuring SNMP
 '''
-snmp_url = 'http://10.1.30.100:8000/Devices/10.1.25.2/Configure/SNMP'
+snmp_url = 'http://10.1.30.100:8000/Devices/R1_EDGE/Configure/SNMP'
 snmp_data = {
              'snmp_server_host': '10.1.30.254',
              'snmp_password': 'device_snmp'}
@@ -139,7 +140,7 @@ else:
 '''
   Configuring an Interface on R2-Edge
 '''
-intf_url = 'http://10.1.30.100:8000/Devices/10.1.25.2/Configure/Interface'
+intf_url = 'http://10.1.30.100:8000/Devices/R2_EDGE/Configure/Interface'
 
 intf_data = {
               'interface_type' : 'e0/0.99',
@@ -157,7 +158,7 @@ else:
 '''
    Configuring HSRP on R2-Edge:
 '''
-hsrp_url  = 'http://10.1.30.100:8000/Devices/10.1.25.3/Configure/HSRP'
+hsrp_url  = 'http://10.1.30.100:8000/Devices/R2_EDGE/Configure/HSRP'
 hsrp_data =  { 
               'virtual_IP':'10.1.99.254',
               'group_ID':99,
@@ -175,6 +176,6 @@ else:
 '''
   API GET request
 '''
-intf_url = 'http://10.1.30.100:8000/GET/Devices/10.1.25.2/interfaces'
+intf_url = 'http://10.1.30.100:8000/GET/Devices/R1_LAN/interfaces'
 result = requests.get(intf_url).json()
 rp(type(result))

@@ -13,7 +13,7 @@
     - Embedded event manager
 '''
 
-
+from Devices.Device_list import Routers
 from fastapi import FastAPI, status, HTTPException
 from netmiko import ConnectHandler
 from pydantic import BaseModel
@@ -30,15 +30,9 @@ app = FastAPI()
 '''
 class NTPClass (BaseModel):
     ntp_server : str
-@app.post('/Devices/{Device_ip}/Configure/NTP', status_code = status.HTTP_201_CREATED)
-def ntp_config(post: NTPClass, Device_ip : str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/NTP', status_code = status.HTTP_201_CREATED)
+def ntp_config(post: NTPClass, Device_ID : str):
+    device = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
     commands = [
@@ -52,7 +46,7 @@ def ntp_config(post: NTPClass, Device_ip : str):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'NTP on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'NTP on Host_{Device_ID} configured successfully'
     
 
 '''
@@ -62,15 +56,9 @@ def ntp_config(post: NTPClass, Device_ip : str):
 class SNMPClass(BaseModel):
     snmp_server_host : str
     snmp_password : str
-@app.post('/Devices/{Device_ip}/Configure/SNMP', status_code = status.HTTP_201_CREATED)
-def snmpconf(post: SNMPClass, Device_ip:str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip }
-
+@app.post('/Devices/{Device_ID}/Configure/SNMP', status_code = status.HTTP_201_CREATED)
+def snmpconf(post: SNMPClass, Device_ID:str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
     configs = ['ip access-list standard SNMP',
@@ -82,7 +70,7 @@ def snmpconf(post: SNMPClass, Device_ip:str):
                 +post.snmp_password]
     result = conn.send_config_set(configs)
     conn.save_config()
-    return result.splitlines(), f'SNMP on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'SNMP on Host_{Device_ID} configured successfully'
      
     
 '''
@@ -95,18 +83,11 @@ class Netflow_Class(BaseModel):
     flow_intf : str
     udp_port  : int
     dest_ip   : str
-@app.post('/Devices/{Device_ip}/Configure/NetFlow', status_code = status.HTTP_201_CREATED)
-def netflowconf(post: Netflow_Class, Device_ip:str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/NetFlow', status_code = status.HTTP_201_CREATED)
+def netflowconf(post: Netflow_Class, Device_ID:str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = ['ip flow-export version 9',
                 'ip flow-export destination '+post.dest_ip+' '+str(post.udp_port),
                 'int '+post.flow_intf,
@@ -119,7 +100,7 @@ def netflowconf(post: Netflow_Class, Device_ip:str):
                 'ip flow-cache timeout active 1']
     result= conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'NetFlow on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'NetFlow on {Device_ID} configured successfully'
 
 '''
     SYSLOG POST:
@@ -127,15 +108,9 @@ def netflowconf(post: Netflow_Class, Device_ip:str):
 '''
 class Syslog_class(BaseModel):
     server_ip : str
-@app.post('/Devices/{Device_ip}/Configure/Syslog', status_code = status.HTTP_201_CREATED)
-def syslog_conf(post: Syslog_class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/Syslog', status_code = status.HTTP_201_CREATED)
+def syslog_conf(post: Syslog_class, Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
     commands = ['logging monitor informational',
@@ -143,7 +118,7 @@ def syslog_conf(post: Syslog_class, Device_ip: str):
                 'logging trap']
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'Syslog on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'Syslog on Host_{Device_ID} configured successfully'
         
 
 '''
@@ -155,18 +130,11 @@ class HSRP_class(BaseModel):
     group_ID : int
     HSRP_intf : str
     priority : int
-@app.post('/Devices/{Device_ip}/Configure/HSRP', status_code = status.HTTP_201_CREATED)
-def HSRP_Config(post: HSRP_class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/HSRP', status_code = status.HTTP_201_CREATED)
+def HSRP_Config(post: HSRP_class, Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = [
                 'int '+post.HSRP_intf,
                 'standby version 2',
@@ -176,7 +144,7 @@ def HSRP_Config(post: HSRP_class, Device_ip: str):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'HSRP on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'HSRP on Host_{Device_ID} configured successfully'
 
 
 '''
@@ -189,18 +157,11 @@ class DHCP_class(BaseModel):
     highest_excluded_address : str
     gateway_IP : str
     DHCP_pool_name : str
-@app.post('/Devices/{Device_ip}/Configure/DHCP', status_code = status.HTTP_201_CREATED)
-def DHCP_Conf(post: DHCP_class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/DHCP', status_code = status.HTTP_201_CREATED)
+def DHCP_Conf(post: DHCP_class, Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = [
                 'ip dhcp excluded-address '+post.lowest_excluded_address+' '+  
                  post.highest_excluded_address,
@@ -211,7 +172,7 @@ def DHCP_Conf(post: DHCP_class, Device_ip: str):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'DHCP on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'DHCP on Host_{Device_ID} configured successfully'
 
 
 '''
@@ -224,8 +185,8 @@ class QoS_profile_bandwidth(BaseModel):
     Realtime_video : int
     Critical_data : int
     Scavenger : int
-@app.post('/Devices/{Device_ip}/Configure/QoS', status_code=status.HTTP_201_CREATED)
-def QoS_config(post: QoS_profile_bandwidth, Device_ip:str):
+@app.post('/Devices/{Device_ID}/Configure/QoS', status_code=status.HTTP_201_CREATED)
+def QoS_config(post: QoS_profile_bandwidth, Device_ID:str):
     sum_bandwidth = (post.Voice + post.Realtime_video + post.Critical_data 
                      +post.Scavenger)
     
@@ -233,13 +194,7 @@ def QoS_config(post: QoS_profile_bandwidth, Device_ip:str):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail ='Bandwidth allocation exceeded 100%') 
     else:
-        device = {
-                  'device_type': 'cisco_ios',
-                  'username': 'Automation',
-                  'password': 'cisco123',
-                  'secret': 'cisco123',
-                  'ip' : Device_ip
-                 }
+        device = Routers[Device_ID]
         conn = ConnectHandler(**device)
         conn.enable()
 
@@ -286,7 +241,7 @@ def QoS_config(post: QoS_profile_bandwidth, Device_ip:str):
                      'service-policy output '+post.Policy_name ]
         result = conn.send_config_set(commands)
         conn.save_config()       
-        return result.splitlines(), f'QoS on Host_{Device_ip} configured successfully'
+        return result.splitlines(), f'QoS on Host_{Device_ID} configured successfully'
 
 
 '''
@@ -297,18 +252,11 @@ class interface_conf_class(BaseModel):
     Description : str
     ip_address : str
     subnet_mask : str
-@app.post('/Devices/{Device_ip}/Configure/Interface', status_code=status.HTTP_201_CREATED)
-def Intf_conf(post :interface_conf_class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/Interface', status_code=status.HTTP_201_CREATED)
+def Intf_conf(post :interface_conf_class, Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = [
                 'int '+post.interface_type,
                 'description '+post.Description,
@@ -316,7 +264,7 @@ def Intf_conf(post :interface_conf_class, Device_ip: str):
                 'no shut'
                ]
     result = conn.send_config_set(commands)
-    return result.splitlines(), f'Interface {post.interface_type} on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'Interface {post.interface_type} on {Device_ID} configured successfully'
 
 
 '''
@@ -329,18 +277,11 @@ class tunnel_conf_class(BaseModel):
     ip_address : str
     subnet_mask : str
 
-@app.post('/Devices/{Device_ip}/Configure/Interface/Tunnel', status_code=status.HTTP_201_CREATED)
-def Intf_conf(post :tunnel_conf_class, Device_ip:str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/Interface/Tunnel', status_code=status.HTTP_201_CREATED)
+def Intf_conf(post :tunnel_conf_class, Device_ID:str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = [
                 'int tunnel '+str(post.tunnel_id),
                 'tunnel source '+post.tunnel_src,
@@ -349,27 +290,18 @@ def Intf_conf(post :tunnel_conf_class, Device_ip:str):
                 'ip mtu 1400'
                ]
     result = conn.send_config_set(commands)
-    return result.splitlines(), f'Tunnel{post.tunnel_id}on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'Tunnel{post.tunnel_id} on {Device_ID} configured successfully'
 
 
 
 '''
    CoPP configuration
 '''
-class CoPP_class(BaseModel):
-    Host_IP : str
-@app.post('/Devices/{Device_ip}/Configure/CoPP',status_code=status.HTTP_201_CREATED)
-def CoPP_conf(post: CoPP_class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/CoPP',status_code=status.HTTP_201_CREATED)
+def CoPP_conf(Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     commands = [
             #Configuring ACLs
                  'ip access-list extended Route_acl',
@@ -402,7 +334,7 @@ def CoPP_conf(post: CoPP_class, Device_ip: str):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'CoPP on Host_{Device_ip} configured successfully'
+    return result.splitlines(), f'CoPP on {Device_ID} configured successfully'
 
 
 '''
@@ -411,15 +343,9 @@ def CoPP_conf(post: CoPP_class, Device_ip: str):
 class EEM_Class(BaseModel):
     filename : str
     tftp_server : str
-@app.post('/Devices/{Device_ip}/Configure/EEM', status_code=status.HTTP_201_CREATED)
-def EEM_config(post: EEM_Class, Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.post('/Devices/{Device_ID}/Configure/EEM', status_code=status.HTTP_201_CREATED)
+def EEM_config(post: EEM_Class, Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
     commands = [
@@ -437,45 +363,30 @@ def EEM_config(post: EEM_Class, Device_ip: str):
                ]
     result = conn.send_config_set(commands)
     conn.save_config()
-    return result.splitlines(), f'EEM on Host {Device_ip} Configured successfully!'
+    return result.splitlines(), f'EEM on {Device_ID} Configured successfully!'
     
 
 '''
   API GET
     - show interfaces brief
 '''
-@app.get('/GET/Devices/{Device_ip}/interfaces')
-def intf_status(Device_ip: str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
-    
+@app.get('/GET/Devices/{Device_ID}/interfaces')
+def intf_status(Device_ID: str):
+    device   = Routers[Device_ID] 
     conn = ConnectHandler(**device)
     conn.enable()
-
     result = conn.send_command('show ip interface brief', use_textfsm=True)
-    return result 
+    return result
     
 
 '''
    API GET
    - Device information
 '''
-@app.get('/GET/Devices/{Device_ip}/version')
-def Device_info(Device_ip : str):
-    device   = {
-                'device_type': 'cisco_ios',
-                'username': 'Automation',
-                'password': 'cisco123',
-                'secret': 'cisco123',
-                'ip' : Device_ip
-               }
+@app.get('/GET/Devices/{Device_ID}/version')
+def Device_info(Device_ID: str):
+    device   = Routers[Device_ID]
     conn = ConnectHandler(**device)
     conn.enable()
-
     result = conn.send_command('show version', use_textfsm=True)
     return result 
